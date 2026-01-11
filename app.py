@@ -168,19 +168,46 @@ IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
 # --- Main Interface ---
-uploaded_files = st.file_uploader(
-    "Upload MRI Images", 
-    type=["jpg", "png", "jpeg", "tif"], 
-    accept_multiple_files=True
-)
 
-if uploaded_files:
-    for uploaded_file in uploaded_files:
-        st.divider()
-        st.subheader(f"📄 File: {uploaded_file.name}")
+# 1. Choose Input Source
+input_source = st.radio("Select Image Source:", ["Upload Image", "Sample Directory (Physician Review)"])
+
+process_queue = [] # List of tuples: (filename, PIL Image)
+
+if input_source == "Upload Image":
+    uploaded_files = st.file_uploader(
+        "Upload MRI Images", 
+        type=["jpg", "png", "jpeg", "tif"], 
+        accept_multiple_files=True
+    )
+    if uploaded_files:
+        for uf in uploaded_files:
+            img = Image.open(uf).convert("RGB")
+            process_queue.append((uf.name, img))
+
+else: # Sample Directory
+    sample_dir = Path("results/physician_review_sample")
+    if not sample_dir.exists():
+        st.error(f"Directory not found: {sample_dir}")
+    else:
+        # Filter for valid image extensions
+        valid_exts = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
+        sample_files = [f.name for f in sample_dir.iterdir() if f.suffix.lower() in valid_exts]
         
-        # Load Image
-        image = Image.open(uploaded_file).convert("RGB")
+        if not sample_files:
+            st.warning("No images found in sample directory.")
+        else:
+            selected_samples = st.multiselect("Select Sample Images", sample_files)
+            for sample_name in selected_samples:
+                file_path = sample_dir / sample_name
+                img = Image.open(file_path).convert("RGB")
+                process_queue.append((sample_name, img))
+
+# 2. Process Images
+if process_queue:
+    for filename, image in process_queue:
+        st.divider()
+        st.subheader(f"📄 File: {filename}")
         
         # Create columns: 1 for Original + N for Selected Models
         cols = st.columns(1 + len(selected_ckpt_names))
@@ -225,7 +252,6 @@ if uploaded_files:
 
                 # Display in the specific column
                 with cols[idx + 1]:
-                    # UPDATED: Use ckpt_name (filename) instead of model_name
                     st.markdown(f"**{ckpt_name}**") 
                     st.image(overlay, caption=f"Pred: {pred_class.upper()}", use_container_width=True)
                     
@@ -244,4 +270,4 @@ if uploaded_files:
                     st.error(f"Error: {e}")
 
 else:
-    st.info("Upload one or more MRI images to begin analysis.")
+    st.info("Select or upload images to begin analysis.")
