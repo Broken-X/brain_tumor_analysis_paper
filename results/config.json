@@ -1,0 +1,32 @@
+{
+  "img_size": 224,
+  "split_ratios": [
+    0.8,
+    0.85,
+    0.9
+  ],
+  "val_fraction_of_train": 0.1,
+  "seeds": [
+    0,
+    1
+  ],
+  "batch_size": 32,
+  "num_workers": 2,
+  "max_epochs": 12,
+  "patience": 3,
+  "lr": 0.0001,
+  "weight_decay": 0.0001,
+  "freeze_backbone_epochs": 0,
+  "device": "cuda",
+  "models": [
+    "resnet50",
+    "densenet121",
+    "efficientnet_b0"
+  ],
+  "gradcam_per_class_correct": 3,
+  "gradcam_per_class_incorrect": 3,
+  "physician_review_fraction": 0.15,
+  "physician_review_max_per_class": 60,
+  "physician_review_seed": 0,
+  "deterministic": false
+}
