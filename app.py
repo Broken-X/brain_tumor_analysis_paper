@@ -190,8 +190,8 @@ else: # Sample Directory
     # NEW: Dictionary mapping display names to folder paths
     DATASET_OPTIONS = {
         "Physician Review Sample": Path("results/physician_review_sample"),
-        "Masoud Nickparvar Dataset": Path("masoudnickparvar/brain-tumor-mri-dataset"),
-        "PK Darabi Dataset": Path("pkdarabi/medical-image-dataset-brain-tumor-detection-organized")
+        "Masoud Nickparvar Dataset": Path("datasets/masoudnickparvar/brain-tumor-mri-dataset"),
+        "PK Darabi Dataset": Path("datasets/pkdarabi/medical-image-dataset-brain-tumor-detection-organized")
     }
     
     # Dropdown to select which folder to browse
