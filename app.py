@@ -170,7 +170,7 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 # --- Main Interface ---
 
 # 1. Choose Input Source
-input_source = st.radio("Select Image Source:", ["Upload Image", "Sample Directory (Physician Review)"])
+input_source = st.radio("Select Image Source:", ["Upload Image", "Sample Directory"])
 
 process_queue = [] # List of tuples: (filename, PIL Image)
 
@@ -186,9 +186,21 @@ if input_source == "Upload Image":
             process_queue.append((uf.name, img))
 
 else: # Sample Directory
-    sample_dir = Path("results/physician_review_sample")
+    
+    # NEW: Dictionary mapping display names to folder paths
+    DATASET_OPTIONS = {
+        "Physician Review Sample": Path("results/physician_review_sample"),
+        "Masoud Nickparvar Dataset": Path("masoudnickparvar/brain-tumor-mri-dataset"),
+        "PK Darabi Dataset": Path("pkdarabi/medical-image-dataset-brain-tumor-detection-organized")
+    }
+    
+    # Dropdown to select which folder to browse
+    selected_dataset_name = st.selectbox("Select Dataset Folder", list(DATASET_OPTIONS.keys()))
+    sample_dir = DATASET_OPTIONS[selected_dataset_name]
+
     if not sample_dir.exists():
         st.error(f"Directory not found: {sample_dir}")
+        st.info("Please ensure the folder exists in the project root.")
     else:
         # Recursive search: Look in all subfolders (glioma, pituitary, etc.)
         valid_exts = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
@@ -205,7 +217,7 @@ else: # Sample Directory
         sample_files.sort()
 
         if not sample_files:
-            st.warning("No images found in sample directory or its subfolders.")
+            st.warning("No images found in this directory or its subfolders.")
         else:
             selected_samples = st.multiselect("Select Sample Images", sample_files)
             for sample_rel_path in selected_samples:
