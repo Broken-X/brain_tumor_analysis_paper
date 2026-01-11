@@ -190,18 +190,31 @@ else: # Sample Directory
     if not sample_dir.exists():
         st.error(f"Directory not found: {sample_dir}")
     else:
-        # Filter for valid image extensions
+        # Recursive search: Look in all subfolders (glioma, pituitary, etc.)
         valid_exts = {".jpg", ".jpeg", ".png", ".tif", ".tiff"}
-        sample_files = [f.name for f in sample_dir.iterdir() if f.suffix.lower() in valid_exts]
         
+        # Gather all image files from subdirectories
+        # rglob("*") finds all files recursively
+        sample_files = [
+            str(f.relative_to(sample_dir)) 
+            for f in sample_dir.rglob("*") 
+            if f.suffix.lower() in valid_exts
+        ]
+        
+        # Sort them for easier finding
+        sample_files.sort()
+
         if not sample_files:
-            st.warning("No images found in sample directory.")
+            st.warning("No images found in sample directory or its subfolders.")
         else:
             selected_samples = st.multiselect("Select Sample Images", sample_files)
-            for sample_name in selected_samples:
-                file_path = sample_dir / sample_name
-                img = Image.open(file_path).convert("RGB")
-                process_queue.append((sample_name, img))
+            for sample_rel_path in selected_samples:
+                file_path = sample_dir / sample_rel_path
+                try:
+                    img = Image.open(file_path).convert("RGB")
+                    process_queue.append((sample_rel_path, img))
+                except Exception as e:
+                    st.error(f"Error loading {sample_rel_path}: {e}")
 
 # 2. Process Images
 if process_queue:
