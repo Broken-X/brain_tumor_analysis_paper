@@ -135,11 +135,19 @@ if not ckpt_names:
     st.error("No checkpoints found.")
     st.stop()
 
+# --- MODIFIED DEFAULT SELECTION ---
+# Look for filenames containing "train85_seed1"
+default_selection = [name for name in ckpt_names if "train85_seed1" in name]
+
+# Fallback: if no such files exist, select the first one available
+if not default_selection and ckpt_names:
+    default_selection = [ckpt_names[0]]
+
 # Allow multiple model selection
 selected_ckpt_names = st.sidebar.multiselect(
     "Select Models to Compare", 
     ckpt_names,
-    default=[ckpt_names[0]] if ckpt_names else None
+    default=default_selection
 )
 
 if not selected_ckpt_names:
