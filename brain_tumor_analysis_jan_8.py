@@ -63,7 +63,7 @@ import matplotlib.pyplot as plt
 import kagglehub
 
 # ---------------------------
-# CONFIG (edit this section)
+# Config (edit this section)
 # ---------------------------
 @dataclass
 class Config:
@@ -101,13 +101,13 @@ class Config:
 CONFIG = Config()
 
 # ----------------------
-# DATA (Kaggle download
+# Data (Kaggle download
 # ----------------------
 import kagglehub
 DATA_ROOT = kagglehub.dataset_download("masoudnickparvar/brain-tumor-mri-dataset")
 
 # ----------
-# UTILITIES
+# Utilities
 # ----------
 def set_seed(seed: int, deterministic: bool = False) -> None:
     random.seed(seed)
@@ -230,7 +230,7 @@ def export_physician_review_sample(
     return review_root
 
 # ----------------------------
-# DATASET: filepaths + labels
+# Dataset: filepaths + labels
 # ----------------------------
 def list_image_files(root: Path) -> List[Path]:
     exts = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
@@ -293,7 +293,7 @@ class MRIFilesDataset(Dataset):
         return img, y, self.paths[idx]
 
 # -----------
-# TRANSFORMS
+# Transforms
 # -----------
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD  = (0.229, 0.224, 0.225)
@@ -315,7 +315,7 @@ test_tfms = transforms.Compose([
 
 
 # -------
-# MODELS
+# Models
 # -------
 def set_trainable(module: nn.Module, trainable: bool) -> None:
     for p in module.parameters():
@@ -373,7 +373,7 @@ def get_target_layer(model_name: str, model: nn.Module) -> nn.Module:
 
 
 # -------------
-# TRAIN / EVAL
+# Train / Eval
 # -------------
 @torch.no_grad()
 def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> Dict:
@@ -519,7 +519,7 @@ def train_one_run(
 
 
 # ---------
-# GRAD-CAM
+# Grad-CAM
 # ---------
 class GradCAM:
     def __init__(self, model: nn.Module, target_layer: nn.Module):
@@ -679,9 +679,9 @@ def export_gradcam_examples(
     cammer.close()
 
 
-# ---------------------
-# SPLITTING + RUN LOOP
-# ---------------------
+# ----------
+# Splitting
+# ----------
 def stratified_split_indices(labels: List[int], train_frac: float, seed: int) -> Tuple[np.ndarray, np.ndarray]:
     from sklearn.model_selection import StratifiedShuffleSplit
     y = np.array(labels)
@@ -712,6 +712,9 @@ def make_loader(paths: List[str], labels: List[int], indices: np.ndarray, tfm, s
     return ds, dl
 
 
+# -----------------
+# Confusion Matrix
+# -----------------
 def plot_and_save_confusion_matrix(cm: np.ndarray, class_names: List[str], out_path: Path, title: str) -> None:
     fig = plt.figure(figsize=(8, 7))
     ax = fig.add_subplot(1, 1, 1)
