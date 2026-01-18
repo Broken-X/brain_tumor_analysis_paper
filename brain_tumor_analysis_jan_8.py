@@ -72,9 +72,9 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 import kagglehub
 
-# ----------------------------
-# 0) CONFIG (edit this section)
-# ----------------------------
+# ---------------------------
+# CONFIG (edit this section)
+# ---------------------------
 @dataclass
 class Config:
     # Data / splits
@@ -110,34 +110,15 @@ class Config:
 
 CONFIG = Config()
 
-# ---------------------------------
-# 1) DATA (Kaggle download or local path)
-# --------------------------------------
-# If you already have the dataset locally, set an env var:
-#   export BRAIN_TUMOR_DATA_ROOT="/path/to/brain-tumor-mri-dataset"
-# The dataset folder should contain Training/ and Testing/ subfolders.
-
-def resolve_data_root() -> str:
-    override = os.environ.get("BRAIN_TUMOR_DATA_ROOT")
-    if override:
-        return str(Path(override).expanduser())
-
-    # Otherwise, try kagglehub (works in Colab once Kaggle credentials are configured).
-    # Preflight: either ~/.kaggle/kaggle.json or KAGGLE_USERNAME/KAGGLE_KEY must exist.
-    kaggle_json = Path("~/.kaggle/kaggle.json").expanduser()
-    has_env = bool(os.environ.get("KAGGLE_USERNAME")) and bool(os.environ.get("KAGGLE_KEY"))
-
-    # Simple check; kagglehub usually handles auth prompts in Colab
-    return kagglehub.dataset_download("masoudnickparvar/brain-tumor-mri-dataset")
-
-#DATA_ROOT = resolve_data_root()
-
+# ----------------------
+# DATA (Kaggle download
+# ----------------------
 import kagglehub
 DATA_ROOT = kagglehub.dataset_download("masoudnickparvar/brain-tumor-mri-dataset")
 
-# ----------------------------
-# 3) UTILITIES
-# ----------------------------
+# ----------
+# UTILITIES
+# ----------
 def set_seed(seed: int, deterministic: bool = False) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -166,10 +147,10 @@ def get_model_stats(model: nn.Module, device: torch.device) -> Tuple[float, floa
       1. params_M: Total parameters in Millions
       2. latency_ms: Average inference time per image in milliseconds (over 100 runs)
     """
-    # 1. Parameter Count (Millions)
+    # Parameter Count (Millions)
     params_M = sum(p.numel() for p in model.parameters()) / 1e6
 
-    # 2. Latency Measurement
+    # Latency Measurement
     model.eval()
     # Create a dummy input matching the input size
     dummy_input = torch.randn(1, 3, CONFIG.img_size, CONFIG.img_size).to(device)
@@ -259,7 +240,7 @@ def export_physician_review_sample(
     return review_root
 
 # ----------------------------
-# 4) DATASET: filepaths + labels
+# DATASET: filepaths + labels
 # ----------------------------
 def list_image_files(root: Path) -> List[Path]:
     exts = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
@@ -321,10 +302,9 @@ class MRIFilesDataset(Dataset):
         y = self.labels[idx]
         return img, y, self.paths[idx]
 
-
-# ----------------------------
-# 5) TRANSFORMS
-# ----------------------------
+# -----------
+# TRANSFORMS
+# -----------
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD  = (0.229, 0.224, 0.225)
 
@@ -344,9 +324,9 @@ test_tfms = transforms.Compose([
 ])
 
 
-# ----------------------------
-# 6) MODELS (consistent head)
-# ----------------------------
+# -------
+# MODELS
+# -------
 def set_trainable(module: nn.Module, trainable: bool) -> None:
     for p in module.parameters():
         p.requires_grad = trainable
@@ -402,9 +382,9 @@ def get_target_layer(model_name: str, model: nn.Module) -> nn.Module:
     raise ValueError(f"No target layer mapping for {model_name}")
 
 
-# ----------------------------
-# 7) TRAIN / EVAL
-# ----------------------------
+# -------------
+# TRAIN / EVAL
+# -------------
 @torch.no_grad()
 def evaluate(model: nn.Module, loader: DataLoader, device: torch.device) -> Dict:
     model.eval()
@@ -548,9 +528,9 @@ def train_one_run(
     return model, {"best_val_loss": best_val_loss, "history": history, "checkpoint": str(ckpt_path)}
 
 
-# ----------------------------
-# 8) GRAD-CAM (systematic export)
-# ----------------------------
+# ---------
+# GRAD-CAM
+# ---------
 class GradCAM:
     def __init__(self, model: nn.Module, target_layer: nn.Module):
         self.model = model
@@ -709,9 +689,9 @@ def export_gradcam_examples(
     cammer.close()
 
 
-# ----------------------------
-# 9) SPLITTING + RUN LOOP
-# ----------------------------
+# ---------------------
+# SPLITTING + RUN LOOP
+# ---------------------
 def stratified_split_indices(labels: List[int], train_frac: float, seed: int) -> Tuple[np.ndarray, np.ndarray]:
     from sklearn.model_selection import StratifiedShuffleSplit
     y = np.array(labels)
